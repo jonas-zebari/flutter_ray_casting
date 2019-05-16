@@ -40,9 +40,8 @@ class SunPainter extends CustomPainter {
     for (double angle = 0; angle < 360; angle += 0.5) {
       // The un-clipped line
       final ray = Wall.fromAngle(origin, _radians(angle), _maxRayLength);
-      // Find the closest point of intersection
+      // Find the closest intersection point if it exists
       double recordLength = double.infinity;
-      // Check ray against every wall
       for (var wall in walls) {
         // The current intersection point, if any
         final intersect = ray.intersection(wall);
