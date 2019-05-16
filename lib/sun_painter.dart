@@ -16,6 +16,9 @@ class SunPainter extends CustomPainter {
     ..strokeCap = StrokeCap.round
     ..strokeWidth = 3;
 
+  static final _centerPaint = Paint()
+    ..color = Colors.white;
+
   static final _maxRayLength = sqrt(pow(Screen.width, 2) + pow(Screen.height, 2));
 
   const SunPainter({this.origin = Offset.zero, this.walls});
@@ -27,7 +30,7 @@ class SunPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawRays(canvas);
     _drawWalls(canvas);
-    canvas.drawCircle(origin, 16, Paint()..color = Colors.white);
+    canvas.drawCircle(origin, 16, _centerPaint);
   }
 
   @override
