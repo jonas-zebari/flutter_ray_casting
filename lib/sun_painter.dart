@@ -5,36 +5,51 @@ import 'package:flutter_rays/screen.dart';
 import 'package:flutter_rays/wall.dart';
 
 class SunPainter extends CustomPainter {
-  static final _sunPaint = Paint()
-    ..style = PaintingStyle.fill
-    ..strokeWidth = 1
-    ..color = Colors.yellow.withAlpha(100);
+//  final _sunPaint = Paint()
+//    ..style = PaintingStyle.fill
+//    ..strokeWidth = 1
+//    ..color = Colors.yellow.withAlpha(100);
+//
+//  final _wallPaint = Paint()
+//    ..style = PaintingStyle.stroke
+//    ..color = Colors.black
+//    ..strokeCap = StrokeCap.round
+//    ..strokeWidth = 3;
+//
+//  final _centerPaint = Paint()..color = Colors.white;
 
-  static final _wallPaint = Paint()
-    ..style = PaintingStyle.stroke
-    ..color = Colors.black
-    ..strokeCap = StrokeCap.round
-    ..strokeWidth = 3;
+  static final _maxRayLength =
+      sqrt(pow(Screen.width, 2) + pow(Screen.height, 2));
 
-  static final _centerPaint = Paint()
-    ..color = Colors.white;
+  SunPainter({
+    this.origin = Offset.zero,
+    this.walls,
+    this.wallColor,
+    this.rayColor,
+    this.sunColor,
+  }) {
+    _rayPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = rayColor;
+    _wallPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..color = wallColor
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3;
+    _sunPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = sunColor;
+  }
 
-  static final _maxRayLength = sqrt(pow(Screen.width, 2) + pow(Screen.height, 2));
-
-  const SunPainter({this.origin = Offset.zero, this.walls});
+  Paint _sunPaint;
+  Paint _wallPaint;
+  Paint _rayPaint;
 
   final Offset origin;
   final List<Wall> walls;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    _drawRays(canvas);
-    _drawWalls(canvas);
-    canvas.drawCircle(origin, 16, _centerPaint);
-  }
-
-  @override
-  bool shouldRepaint(SunPainter old) => origin != old.origin;
+  final Color wallColor;
+  final Color sunColor;
+  final Color rayColor;
 
   void _drawRays(Canvas canvas) {
     for (double angle = 0; angle < 360; angle += 0.5) {
@@ -57,7 +72,7 @@ class SunPainter extends CustomPainter {
         }
       }
 
-      canvas.drawLine(ray.start, ray.end, _sunPaint);
+      canvas.drawLine(ray.start, ray.end, _rayPaint);
     }
   }
 
@@ -71,4 +86,14 @@ class SunPainter extends CustomPainter {
 
   double _distance(Offset a, Offset b) =>
       sqrt(pow(b.dx - a.dx, 2) + pow(b.dy - a.dy, 2));
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _drawRays(canvas);
+    _drawWalls(canvas);
+    canvas.drawCircle(origin, 16, _sunPaint);
+  }
+
+  @override
+  bool shouldRepaint(SunPainter old) => true;
 }
