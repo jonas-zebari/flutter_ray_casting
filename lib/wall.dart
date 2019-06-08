@@ -6,8 +6,9 @@ class Wall {
   Offset start, end;
   bool isVisible;
 
-  double get length =>
-      sqrt(pow(start.dx - end.dx, 2) + pow(start.dy - end.dy, 2));
+  double get length => sqrt(lengthSquared);
+
+  double get lengthSquared => pow(start.dx - end.dx, 2) + pow(start.dy - end.dy, 2);
 
   factory Wall.fromAngle(Offset position, double radians, double length) {
     final end = Offset.fromDirection(radians, length) + position;
@@ -45,7 +46,7 @@ class Wall {
     final y1 = other.start.dy;
     final x2 = other.end.dx;
     final y2 = other.end.dy;
-
+    
     final x3 = this.start.dx;
     final y3 = this.start.dy;
     final x4 = this.end.dx;
@@ -53,8 +54,9 @@ class Wall {
 
     final den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
 
-    if (den == 0)
+    if (den == 0) {
       return null;
+    }
 
     final t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
     final u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;

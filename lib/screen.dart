@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-class Screen {
+abstract class Screen {
   static final double height =
       window.physicalSize.height / window.devicePixelRatio;
   static final double width =

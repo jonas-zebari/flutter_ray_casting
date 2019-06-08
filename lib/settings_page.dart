@@ -3,7 +3,7 @@ import 'package:flutter_rays/overlay.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 class SettingsPage extends StatefulWidget {
-  static const routeName = '/settingsPage';
+  static const String routeName = '/settingsPage';
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
