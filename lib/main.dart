@@ -1,60 +1,110 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_rays/theme_state.dart';
+import 'package:provider/provider.dart';
 
-import 'package:flutter_rays/overlay.dart';
-import 'package:flutter_rays/screen.dart';
-import 'package:flutter_rays/sun_painter.dart';
-import 'package:flutter_rays/wall.dart';
-import 'dart:ui';
+import 'sun_position.dart';
+import 'overlay.dart';
 
-void main() => runApp(FlutterRayCasting());
+void main() => runApp(Root());
 
-class FlutterRayCasting extends StatelessWidget {
+class Root extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     setSystemUiOverlayLight();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SunRays(),
-    );
-  }
-}
-
-class SunRays extends StatefulWidget {
-  final walls = List.generate(4, (_) => Wall.random(Screen.size));
-
-  @override
-  _SunRaysState createState() => _SunRaysState();
-}
-
-class _SunRaysState extends State<SunRays> {
-  var fingerPosition = Offset.zero;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomPaint(
-        painter: SunPainter(
-          origin: fingerPosition,
-          walls: widget.walls,
-        ),
-        child: GestureDetector(
-          onPanUpdate: (details) =>
-              setState(() => fingerPosition = details.globalPosition),
-          onTapDown: (details) =>
-              setState(() => fingerPosition = details.globalPosition),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
-        backgroundColor: Colors.deepPurpleAccent,
-        onPressed: () {
-          var visibleWalls = widget.walls.where((wall) => wall.isVisible);
-          for (var wall in visibleWalls) {
-            wall.generateNewPosition(Screen.size);
-          }
+      color: Colors.white,
+      home: LayoutBuilder(
+        builder: (context, constraints) {
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider<SunPosition>(
+                builder: (context) => SunPosition.center(constraints.biggest),
+              ),
+              ChangeNotifierProvider<ThemeState>(
+                builder: (context) => ThemeState.light(),
+              ),
+              Provider<Size>.value(value: constraints.biggest),
+            ],
+            child: RayCastingApp(),
+          );
         },
       ),
     );
   }
+}
+
+class RayCastingApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<SunPosition, ThemeState>(
+      builder: (context, sunPosition, theme, child) {
+        final size = Provider.of<Size>(context);
+        return Container(
+          color: theme.backgroundColor,
+          child: GestureDetector(
+            onPanUpdate: (details) =>
+                sunPosition.value = details.globalPosition,
+            onTapDown: (details) => theme.toggle(),
+            child: CustomPaint(
+              painter: SunPainter(
+                position: sunPosition.value,
+                sunColor: theme.sunColor,
+                maxSize: size,
+                radius: 20,
+                numRays: 360,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class SunPainter extends CustomPainter {
+  static const _twoPi = 2 * pi;
+
+  const SunPainter({
+    this.maxSize,
+    this.position = Offset.zero,
+    this.sunColor = Colors.yellow,
+    this.radius = 20,
+    this.numRays = 360,
+  });
+
+  final Offset position;
+  final Color sunColor;
+  final double radius;
+  final int numRays;
+  final Size maxSize;
+
+  void _drawSun(Canvas canvas) {
+    final shadowRect = Rect.fromCircle(center: position, radius: radius);
+    final shadowPath = Path()..addOval(shadowRect);
+    canvas.drawShadow(shadowPath, Colors.black, 4, false);
+    canvas.drawCircle(position, 20, Paint()..color = sunColor);
+  }
+
+  void _drawRays(Canvas canvas) {
+    final maxRayLength = sqrt(
+        (maxSize.height * maxSize.height) + (maxSize.width * maxSize.width));
+    final sunPaint = Paint()..color = sunColor;
+    final inc = _twoPi / numRays;
+    for (double angle = 0.0; angle < _twoPi; angle += inc) {
+      final endPoint = Offset.fromDirection(angle, maxRayLength) + position;
+      canvas.drawLine(position, endPoint, sunPaint);
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _drawRays(canvas);
+    _drawSun(canvas);
+  }
+
+  @override
+  bool shouldRepaint(SunPainter oldDelegate) => true;
 }

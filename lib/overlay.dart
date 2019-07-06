@@ -15,9 +15,9 @@ void setSystemUiOverlayLight() {
 void setSystemUiOverlayDark() {
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
-      statusBarColor: Colors.black,
+      statusBarColor: Colors.grey[900],
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.black,
+      systemNavigationBarColor: Colors.grey[900],
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
