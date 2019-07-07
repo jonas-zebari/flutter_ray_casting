@@ -53,8 +53,8 @@ class RayCastingApp extends StatelessWidget {
                 position: sunPosition.value,
                 sunColor: theme.sunColor,
                 maxSize: size,
-                radius: 20,
-                numRays: 360,
+                radius: 30,
+                numRays: 180,
               ),
             ),
           ),
@@ -76,25 +76,23 @@ class SunPainter extends CustomPainter {
   });
 
   final Offset position;
+  final Size maxSize;
   final Color sunColor;
   final double radius;
   final int numRays;
-  final Size maxSize;
 
   void _drawSun(Canvas canvas) {
     final shadowRect = Rect.fromCircle(center: position, radius: radius);
     final shadowPath = Path()..addOval(shadowRect);
     canvas.drawShadow(shadowPath, Colors.black, 4, false);
-    canvas.drawCircle(position, 20, Paint()..color = sunColor);
+    canvas.drawCircle(position, radius, Paint()..color = sunColor);
   }
 
   void _drawRays(Canvas canvas) {
-    final maxRayLength = sqrt(
-        (maxSize.height * maxSize.height) + (maxSize.width * maxSize.width));
     final sunPaint = Paint()..color = sunColor;
     final inc = _twoPi / numRays;
     for (double angle = 0.0; angle < _twoPi; angle += inc) {
-      final endPoint = Offset.fromDirection(angle, maxRayLength) + position;
+      final endPoint = Offset.fromDirection(angle, 2000) + position;
       canvas.drawLine(position, endPoint, sunPaint);
     }
   }
