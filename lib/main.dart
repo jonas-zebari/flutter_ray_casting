@@ -54,16 +54,12 @@ class SunCaster extends StatelessWidget {
         children: <Widget>[
           FloatingActionButton(
             child: Icon(Icons.add),
-            onPressed: () {
-              _walls.add(Ray.random(size));
-            },
+            onPressed: () => _walls.add(Ray.random(size)),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
             child: Icon(Icons.remove),
-            onPressed: () {
-              _walls.removeLast();
-            },
+            onPressed: () => _walls.removeLast(),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(

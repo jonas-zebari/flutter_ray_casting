@@ -5,6 +5,11 @@ import 'ray.dart';
 class WallPainter extends CustomPainter {
   const WallPainter(this.walls);
 
+  static final _wallPaint = Paint()
+    ..color = Colors.black
+    ..strokeWidth = 2
+    ..strokeCap = StrokeCap.round;
+
   final List<Ray> walls;
 
   @override
@@ -13,10 +18,7 @@ class WallPainter extends CustomPainter {
       canvas.drawLine(
         wall.start,
         wall.end,
-        Paint()
-          ..color = Colors.black
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round,
+        _wallPaint,
       );
     }
   }
@@ -24,9 +26,8 @@ class WallPainter extends CustomPainter {
   @override
   bool shouldRepaint(WallPainter oldDelegate) {
     if (walls.length != oldDelegate.walls.length) return true;
-    for (int index = 0; index < walls.length; index++) {
+    for (int index = 0; index < walls.length; index++)
       if (walls[index] != oldDelegate.walls[index]) return true;
-    }
     return false;
   }
 }
