@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rays/overlay.dart';
+import 'package:flutter/services.dart';
 
 import 'ray.dart';
 import 'sun_painter.dart';
@@ -10,7 +10,14 @@ void main() => runApp(RayCastingApp());
 class RayCastingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    setSystemUiOverlayLightTransparent();
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SunCaster(),
