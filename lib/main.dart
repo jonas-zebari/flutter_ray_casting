@@ -1,108 +1,74 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_rays/theme_state.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_rays/overlay.dart';
 
-import 'sun_position.dart';
-import 'overlay.dart';
+import 'ray.dart';
+import 'sun_painter.dart';
+import 'wall_painter.dart';
 
-void main() => runApp(Root());
-
-class Root extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    setSystemUiOverlayLight();
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      color: Colors.white,
-      home: LayoutBuilder(
-        builder: (context, constraints) {
-          return MultiProvider(
-            providers: [
-              ChangeNotifierProvider<SunPosition>(
-                builder: (context) => SunPosition.center(constraints.biggest),
-              ),
-              ChangeNotifierProvider<ThemeState>(
-                builder: (context) => ThemeState.light(),
-              ),
-              Provider<Size>.value(value: constraints.biggest),
-            ],
-            child: RayCastingApp(),
-          );
-        },
-      ),
-    );
-  }
-}
+void main() => runApp(RayCastingApp());
 
 class RayCastingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer2<SunPosition, ThemeState>(
-      builder: (context, sunPosition, theme, child) {
-        final size = Provider.of<Size>(context);
-        return Container(
-          color: theme.backgroundColor,
-          child: GestureDetector(
-            onPanUpdate: (details) =>
-                sunPosition.value = details.globalPosition,
-            onTapDown: (details) => theme.toggle(),
-            child: CustomPaint(
-              painter: SunPainter(
-                position: sunPosition.value,
-                sunColor: theme.sunColor,
-                maxSize: size,
-                radius: 30,
-                numRays: 180,
-              ),
-            ),
-          ),
-        );
-      },
+    setSystemUiOverlayLightTransparent();
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SunCaster(),
     );
   }
 }
 
-class SunPainter extends CustomPainter {
-  static const _twoPi = 2 * pi;
-
-  const SunPainter({
-    this.maxSize,
-    this.position = Offset.zero,
-    this.sunColor = Colors.yellow,
-    this.radius = 20,
-    this.numRays = 360,
-  });
-
-  final Offset position;
-  final Size maxSize;
-  final Color sunColor;
-  final double radius;
-  final int numRays;
-
-  void _drawSun(Canvas canvas) {
-    final shadowRect = Rect.fromCircle(center: position, radius: radius);
-    final shadowPath = Path()..addOval(shadowRect);
-    canvas.drawShadow(shadowPath, Colors.black, 4, false);
-    canvas.drawCircle(position, radius, Paint()..color = sunColor);
-  }
-
-  void _drawRays(Canvas canvas) {
-    final sunPaint = Paint()..color = sunColor;
-    final inc = _twoPi / numRays;
-    for (double angle = 0.0; angle < _twoPi; angle += inc) {
-      final endPoint = Offset.fromDirection(angle, 2000) + position;
-      canvas.drawLine(position, endPoint, sunPaint);
-    }
-  }
+class SunCaster extends StatelessWidget {
+  final _position = ValueNotifier<Offset>(Offset(100, 100));
+  final _walls = <Ray>[];
 
   @override
-  void paint(Canvas canvas, Size size) {
-    _drawRays(canvas);
-    _drawSun(canvas);
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    _walls.addAll(List.generate(4, (index) => Ray.random(size)));
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SizedBox.expand(
+        child: GestureDetector(
+          onPanUpdate: (details) => _position.value = details.globalPosition,
+          child: ValueListenableBuilder<Offset>(
+            valueListenable: _position,
+            builder: (context, value, child) {
+              return CustomPaint(
+                painter: SunPainter(value, _walls, MediaQuery.of(context).size),
+                foregroundPainter: WallPainter(_walls),
+              );
+            },
+          ),
+        ),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              _walls.add(Ray.random(size));
+            },
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            child: Icon(Icons.remove),
+            onPressed: () {
+              _walls.removeLast();
+            },
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            child: Icon(Icons.refresh),
+            onPressed: () {
+              final count = _walls.length;
+              _walls.clear();
+              _walls.addAll(List.generate(count, (index) => Ray.random(size)));
+            },
+          ),
+        ],
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(SunPainter oldDelegate) => true;
 }

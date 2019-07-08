@@ -22,3 +22,14 @@ void setSystemUiOverlayDark() {
     ),
   );
 }
+
+void setSystemUiOverlayLightTransparent() {
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+}
