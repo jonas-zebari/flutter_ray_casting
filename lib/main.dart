@@ -27,7 +27,7 @@ class RayCastingApp extends StatelessWidget {
 
 class SunCaster extends StatelessWidget {
   final _position = ValueNotifier<Offset>(Offset(100, 100));
-  final _walls = <Ray>[];
+  final _walls = List<Ray>();
 
   @override
   Widget build(BuildContext context) {
