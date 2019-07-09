@@ -1,21 +1,12 @@
 import 'dart:math';
-import 'dart:ui';
 
-class Wall {
-  Wall(this.start, this.end, {this.isVisible = true});
-  Offset start, end;
-  bool isVisible;
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
-  double get length => sqrt(lengthSquared);
+class Ray {
+  Ray(this.start, this.end);
 
-  double get lengthSquared => pow(start.dx - end.dx, 2) + pow(start.dy - end.dy, 2);
-
-  factory Wall.fromAngle(Offset position, double radians, double length) {
-    final end = Offset.fromDirection(radians, length) + position;
-    return Wall(position, end);
-  }
-
-  factory Wall.random(Size bounds) {
+  factory Ray.random(Size bounds) {
     final rand = Random();
     final start = Offset(
       rand.nextDouble() * bounds.width,
@@ -25,23 +16,18 @@ class Wall {
       rand.nextDouble() * bounds.width,
       rand.nextDouble() * bounds.height,
     );
-    return Wall(start, end);
+    return Ray(start, end);
   }
 
-  static Offset randomBoundedOffset(Size bounds) {
-    final rand = Random();
-    return Offset(
-      rand.nextDouble() * bounds.width,
-      rand.nextDouble() * bounds.height,
-    );
-  }
+  Offset start;
+  Offset end;
 
-  void generateNewPosition(Size bounds) {
-    this.start = randomBoundedOffset(bounds);
-    this.end = randomBoundedOffset(bounds);
-  }
+  double get length => sqrt(lengthSquared);
 
-  Offset intersection(Wall other) {
+  double get lengthSquared =>
+      pow(start.dx - end.dx, 2) + pow(start.dy - end.dy, 2);
+
+  Offset intersect(Ray other, {double tolerance = 0.0}) {
     final x1 = other.start.dx;
     final y1 = other.start.dy;
     final x2 = other.end.dx;
@@ -69,4 +55,14 @@ class Wall {
       return null;
     }
   }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (other is! Ray) return false;
+    final Ray typedOther = other;
+    return start == typedOther.start && end == typedOther.end;
+  }
+
+  @override
+  int get hashCode => hashValues(start, end);
 }

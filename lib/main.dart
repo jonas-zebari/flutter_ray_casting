@@ -1,101 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'package:flutter_rays/overlay.dart';
-import 'package:flutter_rays/screen.dart';
-import 'package:flutter_rays/settings_page.dart';
-import 'package:flutter_rays/sun_painter.dart';
-import 'package:flutter_rays/wall.dart';
-import 'dart:ui';
+import 'ray.dart';
+import 'sun_painter.dart';
+import 'wall_painter.dart';
 
-void main() => runApp(FlutterRayCasting());
+void main() => runApp(RayCastingApp());
 
-class FlutterRayCasting extends StatelessWidget {
+class RayCastingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    setSystemUiOverlayLight();
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
     return MaterialApp(
-      home: SunRays(),
+      debugShowCheckedModeBanner: false,
+      home: SunCaster(),
     );
   }
 }
 
-class SunRays extends StatefulWidget {
-  final walls = List.generate(4, (_) => Wall.random(Screen.size));
-
-  @override
-  _SunRaysState createState() => _SunRaysState();
-}
-
-class _SunRaysState extends State<SunRays> {
-  var _fingerPosition = Offset(Screen.width / 2, Screen.height / 2);
-  var _buttonColor = Colors.deepPurpleAccent;
-  var _backgroundColor = Colors.white;
-  var _rayColor = Colors.yellow;
-  var _sunColor = Colors.white;
-  var _wallColor = Colors.black;
-
-  void _generateNewWalls() {
-    for (var wall in widget.walls) {
-      if (wall.isVisible) {
-        wall.generateNewPosition(Screen.size);
-      }
-    }
-  }
-
-  void _updatePosition(Offset pos) {
-    setState(() {
-      _fingerPosition = pos;
-    });
-  }
-
-  void _updateSettings(ColorSelections settings) {
-    setState(() {
-      _rayColor = settings.rays;
-      _sunColor = settings.sun;
-      _wallColor = settings.wall;
-      _backgroundColor = settings.background;
-      _buttonColor = settings.button;
-    });
-  }
+class SunCaster extends StatelessWidget {
+  final _position = ValueNotifier<Offset>(Offset(100, 100));
+  final _walls = List<Ray>();
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    _walls.addAll(List.generate(4, (index) => Ray.random(size)));
     return Scaffold(
-      backgroundColor: _backgroundColor,
-      body: CustomPaint(
-        painter: SunPainter(
-          origin: _fingerPosition,
-          walls: widget.walls,
-          sunColor: _sunColor,
-          rayColor: _rayColor,
-          wallColor: _wallColor,
-        ),
+      backgroundColor: Colors.white,
+      body: SizedBox.expand(
         child: GestureDetector(
-          onPanUpdate: (details) => _updatePosition(details.globalPosition),
-          onTapDown: (details) => _updatePosition(details.globalPosition),
+          onPanUpdate: (details) => _position.value = details.globalPosition,
+          child: ValueListenableBuilder<Offset>(
+            valueListenable: _position,
+            builder: (context, value, child) {
+              return CustomPaint(
+                painter: SunPainter(value, _walls, MediaQuery.of(context).size),
+                foregroundPainter: WallPainter(_walls),
+              );
+            },
+          ),
         ),
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           FloatingActionButton(
-              heroTag: null,
-              child: Icon(Icons.settings),
-              backgroundColor: _buttonColor,
-              onPressed: () async {
-                final route = MaterialPageRoute<ColorSelections>(
-                  builder: (context) => SettingsPage(),
-                );
-                final result = await Navigator.push(context, route);
-                _updateSettings(result);
-              },
+            child: Icon(Icons.add),
+            onPressed: () => _walls.add(Ray.random(size)),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
-            heroTag: null,
+            child: Icon(Icons.remove),
+            onPressed: () => _walls.removeLast(),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
             child: Icon(Icons.refresh),
-            backgroundColor: _buttonColor,
-            onPressed: _generateNewWalls
+            onPressed: () {
+              final count = _walls.length;
+              _walls.clear();
+              _walls.addAll(List.generate(count, (index) => Ray.random(size)));
+            },
           ),
         ],
       ),

@@ -1,5 +1,5 @@
 name: flutter_rays
-description: An fun application meant to visualize two-dimensional ray casting. Built with Flutter.
+description: A new Flutter application.
 version: 1.0.0+1
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -7,8 +7,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   cupertino_icons: ^0.1.2
-  flutter_material_color_picker: ^1.0.0
+  provider: ^3.0.0+1
 
 dev_dependencies:
   flutter_test:
